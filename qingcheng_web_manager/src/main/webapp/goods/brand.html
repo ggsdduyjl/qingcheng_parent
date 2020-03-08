@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>品牌管理</title>
+    <link rel="stylesheet" href="../css/elementui.css"/>
+    <script src="../js/vue.js"></script>
+    <script src="../js/elementui.js"></script>
+    <script src="../js/axios.js"></script>
+    <style>
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+        }
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+        .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <el-form :inline="true" class="demo-form-inline">
+            <el-form-item label="名称">
+                <el-input v-model="searchMap.name" placeholder="名称"></el-input>
+            </el-form-item>
+            <el-form-item label="首字母">
+                <el-input v-model="searchMap.letter" placeholder="首字母"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="fetchData">查询</el-button>
+                <el-button type="primary" @click="dialogVisible = true,pojo = {},imageUrl = ''">新增</el-button>
+            </el-form-item>
+        </el-form>
+        <el-table
+                :data="tableData"
+                border
+                style="width: 100%">
+            <el-table-column
+                    prop="id"
+                    label="ID"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="name"
+                    label="名称"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="letter"
+                    label="首字母"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="seq"
+                    label="排序"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    label="图片">
+                <template slot-scope="scope">
+                    <img :src="scope.row.image" height="50px">
+                </template>
+            </el-table-column>
+            <el-table-column
+                    label="操作">
+                <template slot-scope="scope">
+                    <el-button type="text" @click="dialogVisible = true,pojo = scope.row,imageUrl = scope.row.image">修改</el-button>
+                    <el-button type="text" @click="del(scope.row.id)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-pagination
+                background
+                @size-change="fetchData"
+                @current-change="fetchData"
+                :current-page.sync="page"
+                :page-sizes="[10, 20, 30, 40]"
+                :page-size.sync="size"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="total">
+        </el-pagination>
+
+        <!-- 编辑框 -->
+        <el-dialog
+                title="编辑"
+                :visible.sync="dialogVisible"
+                width="30%">
+            <el-form label-position="right" label-width="80px">
+                <el-form-item label="名称">
+                    <el-input v-model="pojo.name"></el-input>
+                </el-form-item>
+                <el-form-item label="首字母">
+                    <el-input v-model="pojo.letter"></el-input>
+                </el-form-item>
+                <el-form-item label="图片">
+                    <el-upload
+                            class="avatar-uploader"
+                            action="/upload/oss.do?folder=brand"
+                            :show-file-list="false"
+                            :on-success="handleAvatarSuccess">
+                        <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                    </el-upload>
+
+                </el-form-item>
+                <el-form-item label="排序">
+                    <el-input v-model="pojo.seq"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="save(),dialogVisible = false">确 定</el-button>
+            </span>
+        </el-dialog>
+    </div>
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                tableData: [],
+                size: 10,
+                total: 0,
+                page: 1,
+                searchMap: {},
+                dialogVisible: false,
+                pojo: {},
+                imageUrl: ''
+            },
+            created(){
+                this.fetchData();
+            },
+            methods: {
+                fetchData(){
+                    axios.post(`/brand/findPage.do?page=${this.page}&size=${this.size}`,this.searchMap).then(response => {
+                       this.tableData = response.data.rows;
+                       this.total = response.data.total;
+                    });
+                },
+                save(){
+                    this.pojo.image = this.imageUrl;
+                    axios.post(`/brand/${this.pojo.id == null ? 'add' : 'update'}.do`,this.pojo).then(response => {
+                        this.$message(response.data.message);
+                        this.fetchData();
+                    });
+                },
+                del(val){
+                    this.$confirm('确定要删除吗？', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        axios.get(`/brand/delete.do?id=${val}`).then(response => {
+                            this.fetchData();
+                        });
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                handleAvatarSuccess(res, file) {
+                    this.imageUrl = file.response;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
