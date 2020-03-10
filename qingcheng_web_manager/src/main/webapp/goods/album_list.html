@@ -45,59 +45,33 @@
             <div class="filter-container">
                 <!--查询表单-->
                 <el-form :inline="true">
-                    <el-form-item label="相册名称">
-                        <el-input v-model="searchMap.title" placeholder="相册名称" class="filter-item"></el-input>
-                    </el-form-item>
-                    <el-button class="dalfBut" @click="fetchData()">查询</el-button>
-                    <el-button type="primary" class="butT" @click="formVisible=true;pojo={},imageUrl = ''">新增</el-button>
+                    <el-button type="primary" class="butT" @click="formVisible=true;pojo={},imageUrl = ''">上传图片</el-button>
+                    <el-button type="primary" class="butT" @click="goBack">返回</el-button>
                 </el-form>
             </div>
+            <br/>
 
             <el-table :data="tableData" border style="width: 100%">
-                <el-table-column prop="id" label="编号" width="180"></el-table-column>
-                <el-table-column prop="title" label="相册名称" width="180"></el-table-column>
-                <el-table-column label="相册封面" width="180">
+                <el-table-column label="图片" width="180">
                     <template slot-scope="scope">
-                        <img :src="scope.row.image" height="80"/>
-                    </template>
-                </el-table-column>
-                <el-table-column  label="图片数量" width="180">
-                    <template slot-scope="scope">
-                        <span v-text="scope.row.imageItems == null || scope.row.imageItems == '' ?
-                        0 : JSON.parse(scope.row.imageItems).length"></span>
+                        <img :src="scope.row.url" height="80"/>
                     </template>
                 </el-table-column>
 
                 <el-table-column
                         label="操作">
                     <template slot-scope="scope">
-                        <el-button @click="toList(scope.row.id)" size="mini" type="primary" size="small">查看</el-button>
-                        <el-button @click="edit(scope.row.id)" size="mini" type="primary" size="small">修改</el-button>
-                        <el-button @click="dele(scope.row.id)" size="mini" type="danger" size="small">删除</el-button>
+                        <el-button @click="dele(scope.row.url)" size="mini" type="danger" size="small">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
-            <div class="pagination-container">
-                <el-pagination
-                        class="pagiantion"
-                        @size-change="fetchData"
-                        @current-change="fetchData"
-                        :current-page.sync="currentPage"
-                        :page-sizes="[10, 20, 30, 40]"
-                        :page-size.sync="size"
-                        layout="total, sizes, prev, pager, next, jumper"
-                        :total="total">
-                </el-pagination>
-            </div>
+
             <div class="add-form">
                 <!--弹出窗口-->
                 <el-dialog title="编辑" :visible.sync="formVisible">
                     <el-form label-width="80px">
-                        <el-form-item label="相册名称">
-                            <el-input v-model="pojo.title"></el-input>
-                        </el-form-item>
 
-                        <el-form-item label="相册封面">
+                        <el-form-item label="图片">
                             <el-upload
                                     class="avatar-uploader"
                                     action="/upload/oss.do?folder=album"
@@ -125,53 +99,47 @@
 <script src="/js/vue.js"></script>
 <script src="/js/axios.js"></script>
 <script src="/js/elementui.js"></script>
+<script src="/js/util.js"></script>
 <script>
     new Vue({
         el: '#app',
         data() {
             return {
                 tableData: [],
-                currentPage: 1,
-                total: 10,
-                size: 10,
                 searchMap: {},
                 pojo: {},
                 formVisible: false,
-                imageUrl: ''
+                imageUrl: '',
+                albumId: 0
             }
         },
         created() {
+            this.albumId = getQueryString('id');
             this.fetchData();
         },
         methods: {
             fetchData() {
-                axios.post(`/album/findPage.do?page=${this.currentPage}&size=${this.size}`, this.searchMap).then(response => {
-                    this.tableData = response.data.rows;
-                    this.total = response.data.total;
+                axios.get(`/album/findById.do?id=${this.albumId}`).then(response => {
+                    this.tableData = JSON.parse(response.data.imageItems);
                 });
             },
             save() {
-                this.pojo.image= this.imageUrl; //如页面有图片上传功能放开注释
-                axios.post(`/album/${this.pojo.id == null ? 'add' : 'update'}.do`, this.pojo).then(response => {
+                this.pojo.imageItems= this.imageUrl; //如页面有图片上传功能放开注释
+                this.pojo.id = this.albumId;
+                axios.post(`/album/addImageItem.do`, this.pojo).then(response => {
                     this.fetchData(); //刷新列表
                     this.formVisible = false;//关闭窗口
                 });
             },
-            edit(id) {
-                this.formVisible = true; // 打开窗口
-                // 调用查询
-                axios.get(`/album/findById.do?id=${id}`).then(response => {
-                    this.pojo = response.data;
-                    this.imageUrl=this.pojo.image //显示图片  如页面有图片上传功能放开注释
-                })
-            },
-            dele(id) {
+            dele(url) {
                 this.$confirm('确定要删除此记录吗?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    axios.get(`/album/delete.do?id=${id}`).then(response => {
+                    this.pojo.id = this.albumId;
+                    this.pojo.imageItems = url;
+                    axios.post(`/album/deleteImageItem.do`,this.pojo).then(response => {
                         this.fetchData(); //刷新列表
                     })
                 })
@@ -179,8 +147,8 @@
             handleAvatarSuccess(res, file) {
                 this.imageUrl = file.response;
             },
-            toList(id){
-                location.href = `album_list.html?id=${id}`;
+            goBack(){
+                location.href = `album.html`;
             }
         }
     })

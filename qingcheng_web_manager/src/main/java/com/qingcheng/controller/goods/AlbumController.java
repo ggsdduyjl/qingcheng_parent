@@ -60,4 +60,16 @@ public class AlbumController {
         return new Result();
     }
 
+    @RequestMapping("addImageItem")
+    public Result addImageItem(@RequestBody Album album){
+        albumService.addImageItem(album);
+        return Result.success();
+    }
+
+    @RequestMapping("deleteImageItem")
+    public Result deleteImageItem(@RequestBody Album album){
+        albumService.deleteImageItem(album);
+        return Result.success();
+    }
+
 }

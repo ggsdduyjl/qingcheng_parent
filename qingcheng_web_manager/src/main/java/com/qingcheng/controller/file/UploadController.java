@@ -54,11 +54,12 @@ public class UploadController {
     /**
      * 上传文件到oss
      *
-     * @param file 要上传的文件
+     * @param file   要上传的文件
+     * @param folder 上传到哪个文件夹下
      * @return 图片路径
      */
     @RequestMapping("oss")
-    public String oss(@RequestParam("file") MultipartFile file,String folder) throws IOException {
+    public String oss(@RequestParam("file") MultipartFile file, String folder) throws IOException {
         // 获取文件后缀名
         String hzName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
         // 新文件名
