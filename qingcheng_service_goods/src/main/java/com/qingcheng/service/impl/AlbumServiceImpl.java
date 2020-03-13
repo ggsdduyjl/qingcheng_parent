@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.AlbumMapper;
-import com.qingcheng.entity.AlbumImageItem;
+import com.qingcheng.vo.AlbumImageItemVo;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.pojo.goods.Album;
 import com.qingcheng.service.goods.AlbumService;
@@ -65,12 +65,12 @@ public class AlbumServiceImpl implements AlbumService {
         // 查出相册
         Album al = albumMapper.selectByPrimaryKey(album.getId());
         // 包装相册图片对象
-        AlbumImageItem item = new AlbumImageItem();
+        AlbumImageItemVo item = new AlbumImageItemVo();
         item.setUrl(album.getImageItems());
         item.setUid(System.currentTimeMillis());
         item.setStatus("success");
         // 加入到图片列表中
-        List<AlbumImageItem> albumImageItems = JSON.parseArray(al.getImageItems(), AlbumImageItem.class);
+        List<AlbumImageItemVo> albumImageItems = JSON.parseArray(al.getImageItems(), AlbumImageItemVo.class);
         if(albumImageItems == null){
             albumImageItems = new ArrayList<>();
         }
@@ -82,8 +82,8 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public void deleteImageItem(Album album) {
         Album al = albumMapper.selectByPrimaryKey(album.getId());
-        List<AlbumImageItem> albumImageItems = JSON.parseArray(al.getImageItems(), AlbumImageItem.class);
-        for (AlbumImageItem item : albumImageItems) {
+        List<AlbumImageItemVo> albumImageItems = JSON.parseArray(al.getImageItems(), AlbumImageItemVo.class);
+        for (AlbumImageItemVo item : albumImageItems) {
             if (item.getUrl().equals(album.getImageItems())) {
                 albumImageItems.remove(item);
                 break;

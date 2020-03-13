@@ -5,9 +5,6 @@ import com.qingcheng.pojo.goods.Pref;
 
 import java.util.*;
 
-/**
- * pref业务逻辑层
- */
 public interface PrefService {
 
     List<Pref> findAll();

@@ -6,9 +6,6 @@ import com.qingcheng.pojo.goods.Category;
 
 import java.util.*;
 
-/**
- * category业务逻辑层
- */
 public interface CategoryService {
 
     List<Category> findAll();

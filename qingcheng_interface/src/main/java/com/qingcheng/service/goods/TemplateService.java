@@ -5,9 +5,6 @@ import com.qingcheng.pojo.goods.Template;
 
 import java.util.*;
 
-/**
- * template业务逻辑层
- */
 public interface TemplateService {
 
     List<Template> findAll();

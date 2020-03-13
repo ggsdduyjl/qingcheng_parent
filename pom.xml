@@ -16,6 +16,7 @@
         <module>qingcheng_interface</module>
         <module>qingcheng_service_goods</module>
         <module>qingcheng_web_manager</module>
+        <module>qingcheng_service_order</module>
     </modules>
 
     <!-- 集中定义依赖版本号 -->

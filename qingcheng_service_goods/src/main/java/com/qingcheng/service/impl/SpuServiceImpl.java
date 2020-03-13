@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.*;
-import com.qingcheng.entity.Goods;
+import com.qingcheng.vo.GoodsVo;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.exceptions.AdminException;
 import com.qingcheng.pojo.goods.*;
@@ -78,7 +78,7 @@ public class SpuServiceImpl implements SpuService {
 
     @Transactional
     @Override
-    public void saveGoods(Goods goods) {
+    public void saveGoods(GoodsVo goods) {
         Date date = new Date();
         // 保存spu
         Spu spu = goods.getSpu();
@@ -132,8 +132,8 @@ public class SpuServiceImpl implements SpuService {
     }
 
     @Override
-    public Goods findGoodsById(String id) {
-        Goods goods = new Goods();
+    public GoodsVo findGoodsById(String id) {
+        GoodsVo goods = new GoodsVo();
         Spu spu = spuMapper.selectByPrimaryKey(id);
         goods.setSpu(spu);
         Example example = new Example(Sku.class);

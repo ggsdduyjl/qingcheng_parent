@@ -1,4 +1,4 @@
-package com.qingcheng.entity;
+package com.qingcheng.vo;
 
 import com.qingcheng.pojo.goods.Sku;
 import com.qingcheng.pojo.goods.Spu;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 商品组合实体类
  */
-public class Goods implements Serializable {
+public class GoodsVo implements Serializable {
 
     private Spu spu;
 

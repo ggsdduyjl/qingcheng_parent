@@ -5,9 +5,6 @@ import com.qingcheng.pojo.goods.Album;
 
 import java.util.*;
 
-/**
- * album业务逻辑层
- */
 public interface AlbumService {
 
     List<Album> findAll();

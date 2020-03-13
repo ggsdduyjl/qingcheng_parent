@@ -5,9 +5,6 @@ import com.qingcheng.pojo.goods.Sku;
 
 import java.util.*;
 
-/**
- * sku业务逻辑层
- */
 public interface SkuService {
 
     List<Sku> findAll();

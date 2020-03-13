@@ -5,9 +5,6 @@ import com.qingcheng.pojo.goods.Spec;
 
 import java.util.*;
 
-/**
- * spec业务逻辑层
- */
 public interface SpecService {
 
     List<Spec> findAll();

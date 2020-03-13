@@ -1,15 +1,12 @@
 package com.qingcheng.service.goods;
 
-import com.qingcheng.entity.Goods;
+import com.qingcheng.vo.GoodsVo;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.exceptions.AdminException;
 import com.qingcheng.pojo.goods.Spu;
 
 import java.util.*;
 
-/**
- * spu业务逻辑层
- */
 public interface SpuService {
 
     List<Spu> findAll();
@@ -33,7 +30,7 @@ public interface SpuService {
      *
      * @param goods spu + skuList
      */
-    void saveGoods(Goods goods);
+    void saveGoods(GoodsVo goods);
 
     /**
      * 查询商品
@@ -41,7 +38,7 @@ public interface SpuService {
      * @param id spu商品id
      * @return spu + skuList
      */
-    Goods findGoodsById(String id);
+    GoodsVo findGoodsById(String id);
 
     /**
      * 商品审核

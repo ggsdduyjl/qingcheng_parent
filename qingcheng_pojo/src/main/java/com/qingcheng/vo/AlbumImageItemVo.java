@@ -1,9 +1,11 @@
-package com.qingcheng.entity;
+package com.qingcheng.vo;
+
+import java.io.Serializable;
 
 /**
  * 相册图片列表对象
  */
-public class AlbumImageItem {
+public class AlbumImageItemVo implements Serializable {
 
     private String url;
 

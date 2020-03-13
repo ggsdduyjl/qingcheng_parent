@@ -1,7 +1,7 @@
 package com.qingcheng.controller.goods;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.qingcheng.entity.Goods;
+import com.qingcheng.vo.GoodsVo;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.entity.Result;
 import com.qingcheng.exceptions.AdminException;
@@ -43,7 +43,6 @@ public class SpuController {
         return spuService.findById(id);
     }
 
-
     @PostMapping("/add")
     public Result add(@RequestBody Spu spu) {
         spuService.add(spu);
@@ -63,13 +62,13 @@ public class SpuController {
     }
 
     @RequestMapping("/saveGoods")
-    public Result saveGoods(@RequestBody Goods goods) {
+    public Result saveGoods(@RequestBody GoodsVo goods) {
         spuService.saveGoods(goods);
         return new Result();
     }
 
     @RequestMapping("/findGoodsById")
-    public Goods findGoodsById(String id) {
+    public GoodsVo findGoodsById(String id) {
         return spuService.findGoodsById(id);
     }
 
@@ -93,14 +92,14 @@ public class SpuController {
 
     @RequestMapping("/pullMany")
     public Result pull(@RequestBody String[] ids) {
-        int count =  spuService.pullMany(ids);
-        return new Result(0,"下架了" + count + "个商品");
+        int count = spuService.pullMany(ids);
+        return new Result(0, "下架了" + count + "个商品");
     }
 
     @RequestMapping("/putMany")
     public Result putMany(@RequestBody String[] ids) {
-        int count =  spuService.putMany(ids);
-        return new Result(0,"上架了" + count + "个商品");
+        int count = spuService.putMany(ids);
+        return new Result(0, "上架了" + count + "个商品");
     }
 
     @RequestMapping("/deleteGoods")

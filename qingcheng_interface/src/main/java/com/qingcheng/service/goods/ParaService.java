@@ -5,9 +5,6 @@ import com.qingcheng.pojo.goods.Para;
 
 import java.util.*;
 
-/**
- * para业务逻辑层
- */
 public interface ParaService {
 
     List<Para> findAll();
