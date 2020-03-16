@@ -32,4 +32,9 @@ public interface OrderService {
      */
     OrderVo getOrderInfo(String id);
 
+    /**
+     * 订单超时自动处理
+     */
+    void orderTimeOutLogic();
+
 }

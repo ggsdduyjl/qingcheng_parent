@@ -3,16 +3,22 @@ package com.qingcheng.service.impl;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.qingcheng.dao.OrderConfigMapper;
 import com.qingcheng.dao.OrderItemMapper;
+import com.qingcheng.dao.OrderLogMapper;
 import com.qingcheng.dao.OrderMapper;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.pojo.order.Order;
+import com.qingcheng.pojo.order.OrderConfig;
 import com.qingcheng.pojo.order.OrderItem;
+import com.qingcheng.pojo.order.OrderLog;
 import com.qingcheng.service.order.OrderService;
 import com.qingcheng.vo.OrderVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +29,10 @@ public class OrderServiceImpl implements OrderService {
     private OrderMapper orderMapper;
     @Autowired
     private OrderItemMapper orderItemMapper;
+    @Autowired
+    OrderConfigMapper orderConfigMapper;
+    @Autowired
+    OrderLogMapper orderLogMapper;
 
     public List<Order> findAll() {
         return orderMapper.selectAll();
@@ -72,6 +82,40 @@ public class OrderServiceImpl implements OrderService {
         vo.setOrder(order);
         vo.setOrderItemList(orderItems);
         return vo;
+    }
+
+    @Override
+    public void orderTimeOutLogic() {
+        Date date = new Date();
+        // 查询超时时间
+        OrderConfig config = orderConfigMapper.selectByPrimaryKey(1);
+        // 超时时间（分）
+        Integer orderTimeout = config.getOrderTimeout();
+        // 超时的时间点
+        LocalDateTime localDateTime = LocalDateTime.now().minusMinutes(orderTimeout);
+
+        // 查询超时订单
+        Example example = new Example(Order.class);
+        example.createCriteria().andLessThan("createTime", localDateTime)
+                .andEqualTo("orderStatus", "0") // 未付款的
+                .andEqualTo("isDelete", "0"); // 未删除的
+        List<Order> orders = orderMapper.selectByExample(example);
+        for (Order order : orders) {
+            // 记录订单变动日志
+            OrderLog log = new OrderLog();
+            log.setOperater("system");
+            log.setOperateTime(date);
+            log.setOrderStatus("4");
+            log.setPayStatus(order.getPayStatus());
+            log.setConsignStatus(order.getConsignStatus());
+            log.setRemarks("订单超时，系统自动关闭");
+            log.setOrderId(order.getId());
+            orderLogMapper.insertSelective(log);
+            // 修改订单状态
+            order.setOrderStatus("4");
+            order.setCloseTime(date);
+            orderMapper.updateByPrimaryKeySelective(order);
+        }
     }
 
     private Example createExample(Map<String, Object> searchMap) {
