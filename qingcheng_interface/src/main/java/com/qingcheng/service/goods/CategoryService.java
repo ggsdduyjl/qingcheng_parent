@@ -24,4 +24,8 @@ public interface CategoryService {
 
     void delete(Integer id) throws AdminException;
 
+    /**
+     * 查询首页商品分类菜单
+     */
+    List<Map<String,Object>> findCategoryTree();
 }

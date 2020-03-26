@@ -11,6 +11,8 @@ import com.qingcheng.service.goods.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +66,28 @@ public class CategoryServiceImpl implements CategoryService {
             throw new AdminException("存在下级分类不能删除");
         }
         categoryMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public List<Map<String, Object>> findCategoryTree() {
+        Example example = new Example(Category.class);
+        example.createCriteria().andEqualTo("isShow", 1);
+        example.setOrderByClause("seq");
+        List<Category> categories = categoryMapper.selectByExample(example);
+        return findByParentId(categories, 0);
+    }
+
+    private List<Map<String, Object>> findByParentId(List<Category> list, Integer parentId) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Category category : list) {
+            if (category.getParentId().equals(parentId)) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("name", category.getName());
+                map.put("menus", findByParentId(list, category.getId()));
+                result.add(map);
+            }
+        }
+        return result;
     }
 
     private Example createExample(Map<String, Object> searchMap) {
