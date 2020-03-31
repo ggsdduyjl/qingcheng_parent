@@ -1,5 +1,7 @@
 package com.qingcheng.pojo.business;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -8,6 +10,7 @@ import java.io.Serializable;
 public class Ad implements Serializable{
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;//ID
 
 	private String name;//广告名称

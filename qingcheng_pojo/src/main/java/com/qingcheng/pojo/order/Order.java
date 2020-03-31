@@ -1,5 +1,7 @@
 package com.qingcheng.pojo.order;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -8,6 +10,7 @@ import java.io.Serializable;
 public class Order implements Serializable{
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String id;//订单id
 
 	private Integer totalNum;//数量合计

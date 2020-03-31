@@ -27,5 +27,10 @@ public interface CategoryService {
     /**
      * 查询首页商品分类菜单
      */
-    List<Map<String,Object>> findCategoryTree();
+    List<Map> findCategoryTree();
+
+    /**
+     * 将分类菜单加入到redis
+     */
+    void saveCategoryTreeToRedis();
 }

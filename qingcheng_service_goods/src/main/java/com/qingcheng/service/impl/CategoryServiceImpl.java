@@ -1,14 +1,17 @@
 package com.qingcheng.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.CategoryMapper;
 import com.qingcheng.entity.PageResult;
+import com.qingcheng.enums.CacheKey;
 import com.qingcheng.exceptions.AdminException;
 import com.qingcheng.pojo.goods.Category;
 import com.qingcheng.service.goods.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
@@ -21,6 +24,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryMapper categoryMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     public List<Category> findAll() {
         return categoryMapper.selectAll();
@@ -50,10 +56,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     public void add(Category category) {
         categoryMapper.insert(category);
+        saveCategoryTreeToRedis();
     }
 
     public void update(Category category) {
         categoryMapper.updateByPrimaryKeySelective(category);
+        saveCategoryTreeToRedis();
     }
 
     public void delete(Integer id) throws AdminException {
@@ -66,15 +74,23 @@ public class CategoryServiceImpl implements CategoryService {
             throw new AdminException("存在下级分类不能删除");
         }
         categoryMapper.deleteByPrimaryKey(id);
+        saveCategoryTreeToRedis();
     }
 
     @Override
-    public List<Map<String, Object>> findCategoryTree() {
+    public List<Map> findCategoryTree() {
+        String cateJson = (String) redisTemplate.boundValueOps(CacheKey.CATEGORY_TREE.toString()).get();
+        return JSON.parseArray(cateJson, Map.class);
+    }
+
+    @Override
+    public void saveCategoryTreeToRedis() {
         Example example = new Example(Category.class);
         example.createCriteria().andEqualTo("isShow", 1);
         example.setOrderByClause("seq");
         List<Category> categories = categoryMapper.selectByExample(example);
-        return findByParentId(categories, 0);
+        List<Map<String, Object>> tree = findByParentId(categories, 0);
+        redisTemplate.boundValueOps(CacheKey.CATEGORY_TREE.toString()).set(JSON.toJSONString(tree));
     }
 
     private List<Map<String, Object>> findByParentId(List<Category> list, Integer parentId) {

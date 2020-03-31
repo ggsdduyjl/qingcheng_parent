@@ -1,15 +1,20 @@
 package com.qingcheng.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.AdMapper;
 import com.qingcheng.entity.PageResult;
+import com.qingcheng.enums.CacheKey;
 import com.qingcheng.pojo.business.Ad;
 import com.qingcheng.service.business.AdService;
+import jdk.nashorn.internal.runtime.linker.LinkerCallSite;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +24,9 @@ public class AdServiceImpl implements AdService {
 
     @Autowired
     private AdMapper adMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     public List<Ad> findAll() {
         return adMapper.selectAll();
@@ -51,25 +59,61 @@ public class AdServiceImpl implements AdService {
 
     public void add(Ad ad) {
         adMapper.insert(ad);
+        saveAdToRedisByPosition(ad.getPosition());
     }
 
     public void update(Ad ad) {
+        String position = adMapper.selectByPrimaryKey(ad.getId()).getPosition();
+        saveAdToRedisByPosition(position);
         adMapper.updateByPrimaryKeySelective(ad);
+        if (!ad.getPosition().equals(position)) {
+            saveAdToRedisByPosition(ad.getPosition());
+        }
     }
 
     public void delete(Integer id) {
+        String position = adMapper.selectByPrimaryKey(id).getPosition();
         adMapper.deleteByPrimaryKey(id);
+        saveAdToRedisByPosition(position);
     }
 
     @Override
     public List<Ad> findByPosition(String position) {
+        String adsJson = (String) redisTemplate.boundHashOps(CacheKey.AD.toString()).get(position);
+        return JSON.parseArray(adsJson, Ad.class);
+    }
+
+    @Override
+    public void saveAdToRedis() {
+        for (String position : getAllPosition()) {
+            saveAdToRedisByPosition(position);
+        }
+    }
+
+    @Override
+    public void saveAdToRedisByPosition(String position) {
         Date date = new Date();
         Example example = new Example(Ad.class);
         example.createCriteria().andEqualTo("position", position)
                 .andLessThanOrEqualTo("startTime", date)
                 .andGreaterThanOrEqualTo("endTime", date)
                 .andEqualTo("status", 1);
-        return adMapper.selectByExample(example);
+        List<Ad> ads = adMapper.selectByExample(example);
+        redisTemplate.boundHashOps(CacheKey.AD.toString()).put(position, JSON.toJSONString(ads));
+    }
+
+    /**
+     * 所有广告位置
+     */
+    private List<String> getAllPosition() {
+        List<String> list = new ArrayList<>();
+        list.add("index_lb");
+        list.add("index_amusing");
+        list.add("index_ea_lb");
+        list.add("index_ea");
+        list.add("index_mobile_lb");
+        list.add("index_mobile");
+        return list;
     }
 
     /**

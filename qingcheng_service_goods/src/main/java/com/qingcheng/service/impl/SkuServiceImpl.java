@@ -5,9 +5,12 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.SkuMapper;
 import com.qingcheng.entity.PageResult;
+import com.qingcheng.enums.CacheKey;
 import com.qingcheng.pojo.goods.Sku;
 import com.qingcheng.service.goods.SkuService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
@@ -18,6 +21,9 @@ public class SkuServiceImpl implements SkuService {
 
     @Autowired
     private SkuMapper skuMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     public List<Sku> findAll() {
         return skuMapper.selectAll();
@@ -55,6 +61,36 @@ public class SkuServiceImpl implements SkuService {
 
     public void delete(String id) {
         skuMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public void saveAllPriceToRedis() {
+        Boolean has = redisTemplate.hasKey(CacheKey.SKU_PRICE.toString());
+        if (has == null || !has) {
+            List<Sku> skuList = skuMapper.selectAll();
+            for (Sku sku : skuList) {
+                redisTemplate.boundHashOps(CacheKey.SKU_PRICE.toString()).put(sku.getId(), sku.getPrice().toString());
+            }
+        }
+    }
+
+    @Override
+    public Integer findPrice(String id) {
+        String price = (String) redisTemplate.boundHashOps(CacheKey.SKU_PRICE.toString()).get(id);
+        if(StringUtils.isBlank(price)){
+            price = "0";
+        }
+        return Integer.parseInt(price);
+    }
+
+    @Override
+    public void savePriceToRedis(String id, Integer price) {
+        redisTemplate.boundHashOps(CacheKey.SKU_PRICE.toString()).put(id, price.toString());
+    }
+
+    @Override
+    public void deleteRedisPrice(String id) {
+        redisTemplate.boundHashOps(CacheKey.SKU_PRICE.toString()).delete(id);
     }
 
     private Example createExample(Map<String, Object> searchMap) {

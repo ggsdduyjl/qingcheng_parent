@@ -31,4 +31,15 @@ public interface AdService {
      */
     List<Ad> findByPosition(String position);
 
+    /**
+     * 将所有广告加入到redis
+     */
+    void saveAdToRedis();
+
+    /**
+     * 根据广告位置将广告加入到redis
+     *
+     * @param position 广告位置
+     */
+    void saveAdToRedisByPosition(String position);
 }

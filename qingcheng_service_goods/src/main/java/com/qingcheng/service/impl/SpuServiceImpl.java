@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.*;
+import com.qingcheng.service.goods.SkuService;
 import com.qingcheng.vo.GoodsVo;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.exceptions.AdminException;
@@ -37,6 +38,9 @@ public class SpuServiceImpl implements SpuService {
 
     @Autowired
     IdWorker idWorker;
+
+    @Autowired
+    SkuService skuService;
 
     public List<Spu> findAll() {
         return spuMapper.selectAll();
@@ -120,6 +124,7 @@ public class SpuServiceImpl implements SpuService {
                 sku.setCategoryName(category.getName());
             }
             skuMapper.insertSelective(sku);
+            skuService.savePriceToRedis(sku.getId(), sku.getPrice());
         }
         // 建立分类和品牌的关联
         CategoryBrand cb = new CategoryBrand();

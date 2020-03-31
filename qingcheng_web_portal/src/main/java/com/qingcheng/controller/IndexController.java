@@ -26,7 +26,7 @@ public class IndexController {
         // 查询首页轮播图
         List<Ad> lbList = adService.findByPosition("index_lb");
         // 查询首页做出分类菜单
-        List<Map<String, Object>> categoryTree = categoryService.findCategoryTree();
+        List<Map> categoryTree = categoryService.findCategoryTree();
         model.addAttribute("lbList", lbList);
         model.addAttribute("categoryTree", categoryTree);
         return INDEX;

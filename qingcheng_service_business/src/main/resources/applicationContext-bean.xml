@@ -10,4 +10,5 @@
         <constructor-arg index="1" value="4"/>
     </bean>
 
+    <bean id="initService" class="com.qingcheng.init.InitService"/>
 </beans>

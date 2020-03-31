@@ -1,5 +1,7 @@
 package com.qingcheng.pojo.order;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -8,6 +10,7 @@ import java.io.Serializable;
 public class ReturnOrderItem implements Serializable{
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;//ID
 
 	private Long categoryId;//分类ID

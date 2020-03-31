@@ -1,5 +1,7 @@
 package com.qingcheng.pojo.order;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -8,6 +10,7 @@ import java.io.Serializable;
 public class OrderConfig implements Serializable{
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;//ID
 
 	private Integer orderTimeout;//正常订单超时时间（分）
